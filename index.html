@@ -1,0 +1,287 @@
+
+<div id="container">
+<canvas id="myCanvas" width= 1080%; height= 1080%; style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+</div>
+
+<script>
+
+
+// https://gist.github.com/joates/6584908
+function linspace(a,b,n) {
+    if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
+    if(n<2) { return n===1?[a]:[]; }
+    var i,ret = Array(n);
+    n--;
+    for(i=n;i>=0;i--) { ret[i] = (i*b+(n-i)*a)/n; }
+    return ret;
+}
+
+var angles = linspace(0,Math.PI * 2, 7)
+var slice  = Math.PI / 6
+
+function mod(n, m) {
+        return ((n % m) + m) % m;
+}
+
+function distance1(x1, y1, x2, y2){   
+
+    return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)   // this isn't actually euclidian distance but it should work the same for relative distance ordering
+
+}
+
+function distance2(x1, y1, x2, y2){   
+
+    return  Math.abs(x1 - x2)  + Math.abs(y1 - y2)   // this isn't actually euclidian distance but it should work the same for relative distance ordering
+
+}
+
+
+
+function offset(x, y, angle, factor){
+
+    retX = x + (Math.sin(angles[angle] + slice)) * factor
+    retY = y + (Math.cos(angles[angle] + slice)) * factor
+    
+    return [retX,retY]
+
+}
+
+var canvas1 = document.getElementById("myCanvas");
+var ctx1    = canvas1.getContext("2d");
+
+//console.log(angles)
+//console.log(slice)
+
+var canvasLeft = canvas1.offsetLeft;
+var canvasTop  = canvas1.offsetTop;
+
+var count = 0
+var drawX = 520
+var drawY = 520
+
+var circleSize = 75
+
+var directions = [2,3,4,5,0,1]
+
+var circX = []
+var circY = []
+
+circX.push(drawX)
+circY.push(drawY)
+
+    //ret = offset(drawX, drawY, 0, circleSize)
+    //drawX = ret[0]
+    //drawY = ret[1]
+    
+var offsetsX = []
+var offsetsY = []
+
+for(var i = 0; i < 6; i++){
+
+    ret = offset(0,0,i,circleSize)
+    offsetsX.push(ret[0])
+    offsetsY.push(ret[1])
+    
+    //console.log(ret)
+
+}
+
+function circle(x, y, uX, uY, ctx, factor, num, shift, fill, twitDist){
+
+    angle = Math.atan2( uY - y, uX - x) / (Math.PI*2)
+    
+    angle1 = Math.floor((Math.abs(angle) * 255 * 2))
+    
+    angle2 = 255 - angle1 
+
+    smallShift = shift / 100
+    
+    pointsX = []
+    pointsY = []
+    
+    for(var i2 = 0; i2 < 6; i2++){
+    
+        pointsX.push(x + offsetsX[i2])
+        pointsY.push(y + offsetsY[i2])
+    
+    }
+    
+    color1 = Math.floor(Math.abs(Math.sin(smallShift)) * Math.floor(angle2) + Math.abs(Math.cos(smallShift)) * Math.floor(Math.floor((angle1 + angle2) / 2)))
+    
+    color3 = Math.floor(angle1)
+    
+    color2 = Math.floor(Math.abs(Math.cos(smallShift * 1.73)) * Math.floor(angle2) + Math.abs(Math.sin(smallShift * 1.73)) * Math.floor(Math.floor((angle1 + angle2) / 2)))
+    
+    if(twitDist < 255){
+        //console.log("~~~~~~~~~~~")
+        ctx.strokeStyle= 'rgba(' +color1.toString()+","+color2.toString()+","+color3.toString()+ ',' + (twitDist)/255 +')'
+    }
+    else{
+    
+        ctx.strokeStyle="rgb("+color1.toString()+","+color2.toString()+","+color3.toString()+")";
+    }
+    ctx.lineWidth=5;
+    ctx.beginPath()
+    ctx.moveTo(pointsX[0],pointsY[0])
+    //ctx.stroke()
+    //ctx.lineTo(pointsX[1],pointsY[1])
+    ctx.quadraticCurveTo((pointsX[0]+pointsX[1])/2 + Math.abs(angle) * 80, (pointsY[0]+pointsY[1])/2 + Math.abs(angle) * 80, pointsX[1],pointsY[1]);
+    ctx.quadraticCurveTo((pointsX[1]+pointsX[2])/2 - Math.abs(angle) * 80, (pointsY[1]+pointsY[2])/2 + Math.abs(angle) * 80, pointsX[2],pointsY[2]);
+    ctx.quadraticCurveTo((pointsX[2]+pointsX[3])/2 + Math.abs(angle) * 80, (pointsY[2]+pointsY[3])/2 + Math.abs(angle) * 80, pointsX[3],pointsY[3]);
+    ctx.quadraticCurveTo((pointsX[3]+pointsX[4])/2 - Math.abs(angle) * 80, (pointsY[3]+pointsY[4])/2 - Math.abs(angle) * 80, pointsX[4],pointsY[4]);
+    ctx.quadraticCurveTo((pointsX[4]+pointsX[5])/2 + Math.abs(angle) * 80, (pointsY[4]+pointsY[5])/2 - Math.abs(angle) * 80, pointsX[5],pointsY[5]);
+    ctx.quadraticCurveTo((pointsX[5]+pointsX[0])/2 - Math.abs(angle) * 80, (pointsY[5]+pointsY[0])/2 - Math.abs(angle) * 80, pointsX[0],pointsY[0]);
+    
+    
+
+    ctx.stroke()
+
+    //console.log(angle)
+    
+    /*
+    ctx1.strokeStyle="rgb("+color1.toString()+","+color2.toString()+","+color3.toString()+")";
+    ctx.lineWidth=5;
+    ctx.beginPath()
+    //ctx.moveTo(pointsX[0],pointsY[0])
+    ctx.lineTo(pointsX[2],pointsY[1])
+    ctx.stroke()
+    */
+    
+    //ctx1.font = "30px Arial";
+    //ctx1.fillText(num.toString(),x,y);
+    
+    /*
+
+    
+    if(fill){
+
+        ctx1.fillStyle="rgb("+(255-color1).toString()+","+(255-color3).toString()+","+(255-color2).toString()+")"
+        ctx.beginPath()
+        ctx.arc(x,y, factor,  0, 2 * Math.PI)
+        ctx.fill();
+    }
+    else{
+    
+        ctx1.strokeStyle="rgb("+color1.toString()+","+color2.toString()+","+color3.toString()+")";
+        ctx.lineWidth=5;
+        ctx.beginPath()
+        ctx.arc(x,y, factor,  0, 2 * Math.PI)
+        ctx.stroke()
+    }
+    
+    
+    side1 = angle - .2
+    side2 = angle + .2
+    */
+
+} 
+
+for(var i = 0; i < 14; i++){
+        
+    for(var j = 0; j < i*6; j++){
+    
+        circX.push(drawX)
+        circY.push(drawY)
+    
+        //ret = offset(drawX, drawY, directions[Math.floor(j / i)], circleSize)
+        drawX = drawX + offsetsX[directions[Math.floor(j / i)]]//ret[0]
+        drawY = drawY + offsetsY[directions[Math.floor(j / i)]]//ret[1]
+
+
+       
+    }
+    
+    //ret = offset(drawX, drawY, 0, circleSize)
+        drawX = drawX + offsetsX[0]
+        drawY = drawY + offsetsY[0]
+
+}
+
+var shift = 0
+var shift2 = 0
+
+function drawStuff( event ){
+
+    ctx1.fillStyle="#FFFFFF";
+    ctx1.fillRect(0,0,canvas1.width,canvas1.height);
+
+    ctx1.fillStyle="#000000";
+    
+	var pixX = event.pageX - canvasLeft;
+	var pixY = event.pageY - canvasTop;
+    
+    var twitDist = Math.sqrt((900 - pixX) ** 2 + (970 - pixY) ** 2) 
+    
+    count = 0
+    drawX = 520
+    drawY = 520
+    
+    shift++
+    if(shift2 < 225){
+        shift2++}
+        
+    var pixXinv = 1080 - pixX + Math.sin(shift/51) //* 130  
+    var pixYinv = 1080 - pixY + Math.cos(shift/78) //* 130 
+        
+    var distanceArray = []
+    var twitDistArray = []
+        
+    for(var i = 0; i < 400; i++){
+    
+        distanceArray.push([i,Math.abs(Math.sin(shift/ 77)) * .5 *  distance2(circX[i], circY[i], pixXinv, pixYinv) + Math.abs(Math.cos(shift/ 77)) *  1.5 * distance1(circX[i], circY[i], pixXinv, pixYinv), distance1(circX[i], circY[i], 900, 970)])
+
+    
+    }
+    
+    distanceArray.sort(function(a, b) {
+        return a[1] - b[1];
+    })
+    
+    var twitDist2 = 0
+    if( twitDist < 255){ twitDist2 = (twitDist)} ///255 }
+    
+    
+    for(var i = 0; i < 400; i++){  //circX.length
+    
+        circle(circX[distanceArray[i][0]], circY[distanceArray[i][0]], pixX, pixY, ctx1,Math.abs(Math.cos(3121314 + shift/3000)) * ( circleSize) + Math.abs(Math.sin(shift/3000)) * ((Math.sqrt(distanceArray[i][1]) + circleSize) * 2 * Math.abs(Math.sin(shift / 521 + i/ 39))), count++, shift, true, (60 + twitDist) * distanceArray[i][2] / 100) //distanceArray[i][2])  
+   
+   
+    //, Math.abs(Math.sin(shift/3000)) * circleSize + Math.abs(Math.cos(shift/3000)) * (circleSize * 2 * Math.abs(Math.sin(shift / 200 + i/ 6)))
+    }
+    
+    if(twitDist < 255){
+        //console.log("~~~~~~~~~~~")
+        
+        ctx1.fillStyle= 'rgba(' + Math.ceil(twitDist - 100) + ',' + Math.ceil(twitDist - 100 ) + ',' + Math.ceil(twitDist - 100) + ',' + (255-twitDist)/255 +')'
+        ctx1.font = "70px Arial";
+        ctx1.fillText("@Aeium",760,1000);
+    }
+    /*
+    if(Math.abs(Math.sin(shift2 / 143) < .5)){
+    
+    ctx1.fillStyle = "rgba(255, 255, 255, "+Math.abs(Math.sin(shift2 / 143)).toString()+")";
+    
+
+    //for(var i = 0; i < 400; i++){  //circX.length
+    
+    //    circle(circX[i], circY[i], pixX, pixY, ctx1, Math.abs(Math.sin(shift/55)) * circleSize + Math.abs(Math.cos(shift/55)) * (circleSize * 2 * Math.abs(Math.sin(shift / 200 + i/ 6))), count++, shift, false)  
+   
+    //}
+    
+    //if(Math.abs(Math.abs(Math.sin(shift2 / 143) > .5))){
+    
+    /*
+
+    */
+}
+
+
+document.getElementById("container").addEventListener('mousemove', function(event) {
+   
+    drawStuff( event )
+
+});
+
+
+</script>
